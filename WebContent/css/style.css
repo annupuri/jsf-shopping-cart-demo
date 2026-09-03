@@ -1,0 +1,31 @@
+th.id {
+	width: 100px;
+}
+th.name {
+	width: 200px;
+}
+th.price {
+	width: 75px;
+}
+th.quantity {
+	width: 75px;
+}
+th.spec {
+	width: 500px;
+}
+.totalText {
+	text-align: right;
+	font-weight: bold;
+}
+.priceText {
+	display: block;
+	float: right;
+	align: right;
+	text-align: right;
+}
+.quantityText {
+	display: block;
+	float: right;
+	align: right;
+	text-align: right;
+}

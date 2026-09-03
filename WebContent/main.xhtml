@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core">
+<h:head>
+	<title>Shopping</title>
+	<link type="text/css" rel="stylesheet" href="css/style.css" />
+</h:head>
+<h:body>
+<h:form id="aForm" prependId="false">
+	<h3>Shopping</h3>
+	<b>Products:</b>
+	<div id="productsDiv">
+	<h:dataTable id="productsTable" border="1" value="#{productController.productList}" var="prd">
+		<h:column headerClass="id">
+			<f:facet name="header"><h:outputText value="ID"/></f:facet>
+			<h:outputText value="#{prd.id}" styleClass="idText"/>
+		</h:column>
+		<h:column headerClass="name">
+			<f:facet name="header"><h:outputText value="Name"/></f:facet>
+			<h:outputText value="#{prd.name}" styleClass="nameText"/>
+		</h:column>
+		<h:column headerClass="price">
+			<f:facet name="header"><h:outputText value="Price"/></f:facet>
+			<h:outputText value="#{prd.price}" styleClass="priceText"/>
+		</h:column>
+		<h:column headerClass="quantity">
+			<f:facet name="header"><h:outputText value="Stock"/></f:facet>
+			<h:outputText value="#{prd.quantity}" styleClass="quantityText"/>
+		</h:column>
+		<h:column headerClass="spec">
+			<f:facet name="header"><h:outputText value="Description"/></f:facet>
+			<h:outputText value="#{prd.description}" styleClass="specText"/>
+		</h:column>
+		<h:column headerClass="choice">
+			<f:facet name="header"><h:outputText value="Cart"/></f:facet>
+			<h:commandButton value="Add to Cart" action="#{cartController.addToCart(prd)}">
+				<f:ajax render=":aForm:cartTable"/>
+			</h:commandButton>
+		</h:column>
+	</h:dataTable>
+	</div>
+	<br/>
+	<b>Cart:</b>
+	<div id="cartDiv">
+	<h:dataTable id="cartTable" border="1" value="#{cartController.productList}" var="line">
+		<h:column headerClass="id">
+			<f:facet name="header"><h:outputText value="ID"/></f:facet>
+			<h:outputText value="#{line.id}" styleClass="idText"/>
+		</h:column>
+		<h:column headerClass="name" footerClass="totalText">
+			<f:facet name="header"><h:outputText value="Name"/></f:facet>
+			<h:outputText value="#{line.name}" styleClass="nameText"/>
+			<f:facet name="footer"><h:outputText value="Total:"/></f:facet>
+		</h:column>
+		<h:column headerClass="price">
+			<f:facet name="header"><h:outputText value="Price"/></f:facet>
+			<h:outputText value="#{line.price}" styleClass="priceText"/>
+			<f:facet name="footer"><h:outputText value="#{cartController.totalPrice}" styleClass="priceText"/></f:facet>
+		</h:column>
+		<h:column headerClass="quantity">
+			<f:facet name="header"><h:outputText value="Quantity"/></f:facet>
+			<h:outputText value="#{line.quantity}" styleClass="quantityText"/>
+			<f:facet name="footer"><h:outputText value="#{cartController.totalQuantity}" styleClass="quantityText"/></f:facet>
+		</h:column>
+	</h:dataTable>
+	<h:commandButton id="clearButton" value="Clear" action="#{cartController.clear()}">
+		<f:ajax render=":aForm:cartTable :aForm:productsTable"/>
+	</h:commandButton>
+	<h:commandButton id="checkOutButton" value="Checkout" action="#{cartController.checkOut()}">
+		<f:ajax render=":aForm:cartTable :aForm:productsTable"/>
+	</h:commandButton>
+	</div>
+</h:form>
+</h:body>
+</html>

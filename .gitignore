@@ -1,0 +1,33 @@
+### Maven ###
+target/
+bin/
+*.class
+*.war
+
+### Logs ###
+*.log
+logs/
+
+### Runtime data ###
+# Products XML store created by the app / the tool in the working directory.
+/product_db/
+Products.xml
+
+### Eclipse ###
+.settings/
+.metadata/
+.classpath
+.project
+.apt_generated
+.factorypath
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+out/
+
+### VS Code ###
+.vscode/
+
+### OS ###
+.DS_Store
