@@ -4,8 +4,8 @@
 
 *English | [日本語](README.ja.md)*
 
-A small product-catalogue and shopping-cart web application built with Java Server Faces
-(Apache MyFaces) and JAXB. It builds to a `war` and layers cleanly into
+A small product-catalogue and shopping-cart web application built with Jakarta Faces
+(Apache MyFaces) and Jakarta XML Binding. It builds to a `war` and layers cleanly into
 `presentation` / `business` / `integration` / `common`.
 
 ## Screenshot
@@ -17,31 +17,31 @@ sample data:
 
 ## Layout
 
-- `src/shopping/presentation` — JSF managed beans (`ProductController`, `CartController`) and a
-  custom `BigDecimal` converter
+- `src/shopping/presentation` — CDI-managed Faces beans (`ProductController`, `CartController`)
+  and a custom `BigDecimal` converter
 - `src/shopping/business` — `ProductService` plus the JAXB-bound `Product` model
 - `src/shopping/integration` — `ProductDao`, which reads and writes the catalogue as an XML file
 - `src/shopping/common` — small application utilities
 - `src/shopping/tool` — standalone `main` programs that generate the sample XML and its schema
-- `WebContent` — a Facelets view (`main.xhtml`), a welcome JSP, and CSS
+- `WebContent` — a Facelets view (`main.xhtml`), a welcome page, and CSS
 - `test` — JUnit 5 test suite
 
 ## Stack
 
-Java 11, Maven (`war` packaging). JSF 2.1 API on Apache MyFaces 2.3 (`javax.faces` namespace),
-JAXB via the Glassfish reference implementation, Apache Commons (Lang / Collections / BeanUtils /
-Logging), and `reload4j` for logging. JUnit 5, Mockito and JaCoCo for tests. Targets a
-Servlet 3.1 / JSP 2.3 container such as Tomcat 9.
+Java 21, Maven (`war` packaging), Jakarta EE 10 (`jakarta.*` namespace): Jakarta Faces 4.0
+on Apache MyFaces 4, CDI 4 via Weld, Jakarta XML Binding 4 with the Glassfish reference
+implementation, and SLF4J / Logback for logging. JUnit 5, Mockito and JaCoCo for tests.
+Targets a Servlet 6.0 container such as Tomcat 10.1.
 
 ## Design
 
-**Layering.** The JSF controllers hold no persistence logic. `ProductController` and
-`CartController` delegate to `ProductService`, which brackets each operation in a
-`synchronized` block and delegates storage to `ProductDao`. `ProductDao` marshals the whole
-catalogue to a single `Products.xml` with JAXB.
+**Layering.** The Faces controllers hold no persistence logic. `ProductController`
+(`@RequestScoped`) and `CartController` (`@SessionScoped`) delegate to `ProductService`,
+which brackets each operation in a `synchronized` block and delegates storage to
+`ProductDao`. `ProductDao` marshals the whole catalogue to a single `Products.xml` with JAXB.
 
 **Injection seams.** `ProductDao`, `ProductService` and both controllers keep the
-no-argument / `getInstance()` path that JSF and the running app use, and also expose a
+no-argument / `getInstance()` path that CDI and the running app use, and also expose a
 constructor that takes its collaborator, so tests can inject a DAO pointed at a temporary
 directory instead of touching real files.
 
@@ -59,7 +59,7 @@ mvn package
 ```
 
 produces `target/jsf-shopping-cart-demo-<version>.war`. `.tool-versions` pins the toolchain
-for [asdf](https://asdf-vm.com): Temurin 11 and Maven 3.9.9.
+for [asdf](https://asdf-vm.com): Temurin 21 and Maven 3.9.9.
 
 ## Test
 
@@ -88,20 +88,20 @@ and reload the page. Then use *Add to Cart* to build up the cart and *Checkout* 
 the stock counts drop and are saved back to `product_db/Products.xml`. The store path is
 relative to the directory Maven runs in — override it with `-Dshopping.dataDir=/some/path`.
 
-To deploy instead of running embedded, drop the `war` into a Tomcat 9 `webapps` directory.
+To deploy instead of running embedded, drop the `war` into a Tomcat 10.1 `webapps` directory.
 
 ## About
 
-A learning project. It was first written as an Eclipse project around 2012; this repository
-revives it on a current toolchain — Java 11, a modern Maven build, JUnit 5 and a JaCoCo
-coverage gate — while keeping the original architecture (JSF on MyFaces, a file-backed XML
-store, the `javax.*` namespace).
+A learning project. It was first written as an Eclipse project around 2012 (JSF 2.1 on the
+`javax.faces` namespace, EclipseLink, log4j 1.2); this repository revives it on a current
+toolchain — Java 21, Jakarta EE 10, a modern Maven build, JUnit 5 and a JaCoCo coverage
+gate — while keeping the original architecture (Faces on MyFaces, a file-backed XML store,
+a service/DAO split).
 
 ## Scope
 
 Not production software. The catalogue is a single XML file guarded only by an in-process
-lock, the cart is JSF session state with no order history, there is no authentication, and
-logging goes through the `reload4j` fork of the end-of-life log4j 1.2 API.
+lock, the cart is Faces session state with no order history, and there is no authentication.
 
 Bug reports via issues are welcome, but it is not under active feature development.
 

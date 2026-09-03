@@ -5,20 +5,20 @@ package shopping.presentation;
 
 import java.math.BigDecimal;
 
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.BigDecimalConverter;
-import javax.faces.convert.ConverterException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.convert.BigDecimalConverter;
+import jakarta.faces.convert.ConverterException;
 
 /**
  * Custom BigDecimal converter which has smarter conversion logic
  * than the parent class.
  */
 public class MyBigDecimalConverter extends BigDecimalConverter {
-	private final Log log = LogFactory.getLog(getClass());
+	private static final Logger log = LoggerFactory.getLogger(MyBigDecimalConverter.class);
 
 	/**
 	 * Constructor.

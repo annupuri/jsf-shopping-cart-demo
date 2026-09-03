@@ -3,18 +3,18 @@
  */
 package shopping.common;
 
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.servlet.ServletContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.servlet.ServletContext;
 
 /**
  * Application utilities.
  */
 public abstract class AppUtils implements AppConstants {
-	private static final Log log = LogFactory.getLog(AppUtils.class);
+	private static final Logger log = LoggerFactory.getLogger(AppUtils.class);
 
 	/**
 	 * Constructor.

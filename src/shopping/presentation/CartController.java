@@ -3,41 +3,42 @@
  */
 package shopping.presentation;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Named;
 import shopping.business.ProductService;
 import shopping.business.generated.Product;
-
-
 
 /**
  * The controller of requests for the cart.
  */
-@ManagedBean
+@Named
 @SessionScoped
-public class CartController {
-	private final Log log = LogFactory.getLog(getClass());
-	private final ProductService productService;
+public class CartController implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	private static final Logger log = LoggerFactory.getLogger(CartController.class);
+
+	private transient ProductService productService;
 	private Product product = new Product();
-	private List<Product> productList = new ArrayList<Product>();
+	private List<Product> productList = new ArrayList<>();
 	private BigDecimal totalPrice = BigDecimal.ZERO;
 	private int totalQuantity = 0;
 
 	/**
-	 * Constructor used by JSF; delegates to {@link ProductService#getInstance()}.
+	 * Constructor used by the container; delegates to
+	 * {@link ProductService#getInstance()}.
 	 */
 	public CartController() {
 		this(ProductService.getInstance());
@@ -53,62 +54,42 @@ public class CartController {
 		this.productService = productService;
 	}
 
-	/**
-	 * @return the addProduct
-	 */
+	/** Re-resolves the singleton after session passivation nulls the field. */
+	private ProductService service() {
+		if (this.productService == null) {
+			this.productService = ProductService.getInstance();
+		}
+		return this.productService;
+	}
+
 	public Product getProduct() {
 		return this.product;
 	}
 
-	/**
-	 * @param addProduct
-	 *            the addProduct to set
-	 */
-	public void setProduct(Product addProduct) {
-		this.product = addProduct;
+	public void setProduct(Product product) {
+		this.product = product;
 	}
 
-	/**
-	 * @return the productList
-	 */
 	public List<Product> getProductList() {
 		return this.productList;
 	}
 
-	/**
-	 * @param productList
-	 *            the productList to set
-	 */
-	public void setProductList(List<Product> selectedProductList) {
-		this.productList = selectedProductList;
+	public void setProductList(List<Product> productList) {
+		this.productList = productList;
 	}
 
-	/**
-	 * @return the totalPrice
-	 */
 	public BigDecimal getTotalPrice() {
 		return this.totalPrice;
 	}
 
-	/**
-	 * @param totalPrice
-	 *            the totalPrice to set
-	 */
 	public void setTotalPrice(BigDecimal totalPrice) {
 		this.totalPrice = totalPrice;
 	}
 
-	/**
-	 * @return the totalQuantity
-	 */
 	public int getTotalQuantity() {
 		return this.totalQuantity;
 	}
 
-	/**
-	 * @param totalQuantity
-	 *            the totalQuantity to set
-	 */
 	public void setTotalQuantity(int totalQuantity) {
 		this.totalQuantity = totalQuantity;
 	}
@@ -135,31 +116,26 @@ public class CartController {
 
 	private static Product copyOf(Product source) {
 		final Product copy = new Product();
-		try {
-			BeanUtils.copyProperties(copy, source);
-		} catch (Exception e) {
-			throw new RuntimeException("product may be null or non-bean.", e);
-		}
+		copy.setId(source.getId());
+		copy.setName(source.getName());
+		copy.setPrice(source.getPrice());
+		copy.setQuantity(source.getQuantity());
+		copy.setDescription(source.getDescription());
 		return copy;
 	}
 
 	private void addLine(Product newProduct) {
 		log.debug("start.");
 		try {
-			if (StringUtils.isBlank(newProduct.getId())) {
-				try {
-					log.error("newProduct.id is blank. newProduct="
-							+ BeanUtils.describe(newProduct));
-				} catch (Exception e) {
-					log.error("newProduct.id is blank.", e);
-				}
+			final String productId = newProduct.getId();
+			if (productId == null || productId.isBlank()) {
+				log.error("newProduct.id is blank: {}", newProduct);
 				return;
 			}
 			clearTotal();
-			final String productId = newProduct.getId();
 			boolean newItem = true;
 			for (Product eachProduct : this.productList) {
-				if (ObjectUtils.equals(productId, eachProduct.getId())) {
+				if (Objects.equals(productId, eachProduct.getId())) {
 					newItem = false;
 					// add price
 					final BigDecimal price = eachProduct.getPrice();
@@ -204,9 +180,6 @@ public class CartController {
 		}
 	}
 
-	/**
-	 * Clear the total row of the cart table.
-	 */
 	private void clearTotal() {
 		this.totalPrice = BigDecimal.ZERO;
 		this.totalQuantity = 0;
@@ -222,17 +195,17 @@ public class CartController {
 				log.warn("checkOut called with an empty cart.");
 				return;
 			}
-			final Map<String, Product> sellProductMap = new HashMap<String, Product>();
+			final Map<String, Product> sellProductMap = new HashMap<>();
 			for (Product line : this.productList) {
 				final Product order = new Product();
 				order.setId(line.getId());
 				order.setQuantity(line.getQuantity());
 				sellProductMap.put(order.getId(), order);
 			}
-			this.productService.sellProducts(sellProductMap);
+			service().sellProducts(sellProductMap);
 			clear();
 		} catch (RuntimeException e) {
-			log.error("failed to check out: " + e);
+			log.error("failed to check out: {}", e.toString());
 			throw e;
 		} finally {
 			log.debug("end.");

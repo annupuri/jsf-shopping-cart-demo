@@ -12,9 +12,9 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.servlet.ServletContext;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.servlet.ServletContext;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;

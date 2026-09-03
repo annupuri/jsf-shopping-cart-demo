@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} %-5level %logger{28} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<!-- Keep the app's own DEBUG paths exercised in tests. -->
+	<logger name="shopping" level="DEBUG" />
+	<!-- AppUtilsTest deliberately drives every AppUtils edge/failure branch. -->
+	<logger name="shopping.common" level="ERROR" />
+
+	<root level="WARN">
+		<appender-ref ref="CONSOLE" />
+	</root>
+</configuration>

@@ -4,8 +4,8 @@
 
 *[English](README.md) | 日本語*
 
-Java Server Faces(Apache MyFaces)と JAXB で作成した、商品カタログとショッピングカートの
-小さな Web アプリケーションです。`war` パッケージとしてビルドでき、
+Jakarta Faces(Apache MyFaces)と Jakarta XML Binding で作成した、商品カタログと
+ショッピングカートの小さな Web アプリケーションです。`war` パッケージとしてビルドでき、
 `presentation` / `business` / `integration` / `common` にレイヤーを分けています。
 
 ## スクリーンショット
@@ -16,30 +16,30 @@ Java Server Faces(Apache MyFaces)と JAXB で作成した、商品カタログ�
 
 ## 構成
 
-- `src/shopping/presentation` — JSF の Managed Bean(`ProductController`、`CartController`)と
+- `src/shopping/presentation` — CDI 管理の Faces Bean(`ProductController`、`CartController`)と
   カスタム `BigDecimal` コンバータ
 - `src/shopping/business` — `ProductService` と JAXB バインドの `Product` モデル
 - `src/shopping/integration` — カタログを XML ファイルとして読み書きする `ProductDao`
 - `src/shopping/common` — 小さな共通ユーティリティ
 - `src/shopping/tool` — サンプル XML とスキーマを生成するスタンドアロンの `main` プログラム
-- `WebContent` — Facelets ビュー(`main.xhtml`)、ウェルカム用 JSP、CSS
+- `WebContent` — Facelets ビュー(`main.xhtml`)、ウェルカムページ、CSS
 - `test` — JUnit 5 のテストスイート
 
 ## 技術スタック
 
-Java 11、Maven(`war` パッケージング)。JSF 2.1 API を Apache MyFaces 2.3 上で使用
-(`javax.faces` 名前空間)、JAXB は Glassfish リファレンス実装、Apache Commons
-(Lang / Collections / BeanUtils / Logging)、ロギングは `reload4j`。
-テストは JUnit 5 / Mockito / JaCoCo。Servlet 3.1 / JSP 2.3 コンテナ(Tomcat 9 など)を想定。
+Java 21、Maven(`war` パッケージング)、Jakarta EE 10(`jakarta.*` 名前空間)。Jakarta
+Faces 4.0 を Apache MyFaces 4 上で使用、CDI 4 は Weld、Jakarta XML Binding 4 は Glassfish
+リファレンス実装、ロギングは SLF4J / Logback。テストは JUnit 5 / Mockito / JaCoCo。
+Servlet 6.0 コンテナ(Tomcat 10.1 など)を想定。
 
 ## 設計
 
-**レイヤリング。** JSF のコントローラは永続化ロジックを持ちません。`ProductController` と
-`CartController` は `ProductService` に委譲し、`ProductService` は各操作を `synchronized`
-ブロックで囲んで `ProductDao` にストレージを委譲します。`ProductDao` はカタログ全体を
-JAXB で単一の `Products.xml` にマーシャリングします。
+**レイヤリング。** Faces のコントローラは永続化ロジックを持ちません。`ProductController`
+(`@RequestScoped`)と `CartController`(`@SessionScoped`)は `ProductService` に委譲し、
+`ProductService` は各操作を `synchronized` ブロックで囲んで `ProductDao` にストレージを
+委譲します。`ProductDao` はカタログ全体を JAXB で単一の `Products.xml` にマーシャリングします。
 
-**注入用シーム。** `ProductDao` / `ProductService` / 両コントローラは、JSF と実行時の
+**注入用シーム。** `ProductDao` / `ProductService` / 両コントローラは、CDI と実行時の
 アプリが使う引数なし・`getInstance()` の経路を維持しつつ、協力オブジェクトを受け取る
 コンストラクタも公開しています。これによりテストは、実ファイルに触れず一時ディレクトリを
 指す DAO を注入できます。
@@ -58,7 +58,7 @@ mvn package
 ```
 
 で `target/jsf-shopping-cart-demo-<version>.war` が生成されます。ツールチェーンは
-`.tool-versions` に [asdf](https://asdf-vm.com) 用として Temurin 11 と Maven 3.9.9 を
+`.tool-versions` に [asdf](https://asdf-vm.com) 用として Temurin 21 と Maven 3.9.9 を
 pin しています。
 
 ## テスト
@@ -88,20 +88,20 @@ mvn compile exec:java      # product_db/Products.xml を書き出す
 在庫数が減って `product_db/Products.xml` に保存されます。ストアのパスは Maven の実行
 ディレクトリからの相対です。`-Dshopping.dataDir=/some/path` で変更できます。
 
-組み込み実行ではなくデプロイする場合は、`war` を Tomcat 9 の `webapps` に配置します。
+組み込み実行ではなくデプロイする場合は、`war` を Tomcat 10.1 の `webapps` に配置します。
 
 ## 位置づけ
 
-学習用プロジェクトです。もともと 2012 年ごろに Eclipse プロジェクトとして作成したものを、
-アーキテクチャ(MyFaces 上の JSF、ファイルベースの XML ストア、`javax.*` 名前空間)は
-そのままに、現行のツールチェーン(Java 11、モダンな Maven ビルド、JUnit 5、JaCoCo の
+学習用プロジェクトです。もともと 2012 年ごろに Eclipse プロジェクトとして作成したもの
+(`javax.faces` 名前空間の JSF 2.1、EclipseLink、log4j 1.2)を、アーキテクチャ(MyFaces
+上の Faces、ファイルベースの XML ストア、サービス / DAO 分離)はそのままに、現行の
+ツールチェーン(Java 21、Jakarta EE 10、モダンな Maven ビルド、JUnit 5、JaCoCo の
 カバレッジゲート)へ移行したものです。
 
 ## スコープ
 
 本番用ソフトウェアではありません。カタログはプロセス内ロックだけで保護された単一の XML
-ファイル、カートは注文履歴のない JSF セッション状態で、認証はなく、ロギングは EOL となった
-log4j 1.2 API のフォークである `reload4j` を通します。
+ファイル、カートは注文履歴のない Faces セッション状態で、認証はありません。
 
 Issue でのバグ報告は歓迎しますが、機能開発は行っていません。
 

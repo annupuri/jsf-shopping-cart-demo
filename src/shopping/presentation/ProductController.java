@@ -5,17 +5,15 @@ package shopping.presentation;
 
 import java.util.List;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.RequestScoped;
-
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Named;
 import shopping.business.ProductService;
 import shopping.business.generated.Product;
-
 
 /**
  * The controller of requests for products.
  */
-@ManagedBean
+@Named
 @RequestScoped
 public class ProductController {
 	private final ProductService productService;
